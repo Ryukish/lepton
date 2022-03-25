@@ -86,25 +86,52 @@ describe('Contract/Index', function () {
     );
   });
   
-  it('[HH] Should return gas estimate number', async function run() {
+  it.only('[HH] Should return gas estimate number', async function run() {
     if (!process.env.RUN_HARDHAT_TESTS) {
       this.skip();
       return;
     }
-   
-    const transaction = new ERC20Transaction(TOKEN_ADDRESS, chainID);
-    const dummyTx = await transaction.dummyProve(lepton.wallets[walletID], testEncryptionKey);4
-    const call = await contract.transact([
-      dummyTx,
+
+    const address = (await lepton.wallets[walletID].addresses(chainID))[0];
+    const { pubkey } = Lepton.decodeAddress(address);
+
+    const RANDOM = '1e686e7506b0f4f21d6991b4cb58d39e77c31ed0577a986750c8dce8804af5b9';
+
+    // Create deposit
+    const deposit = await contract.generateDeposit([
+      new ERC20Note(pubkey, RANDOM, new BN('11000000000000000000000000', 10), TOKEN_ADDRESS),
     ]);
 
+    const awaiterScan = () =>
+    new Promise((resolve, reject) =>
+      lepton.wallets[walletID].once('scanned', ({ chainID: returnedChainID }: ScannedEventData) =>
+        returnedChainID === chainID ? resolve(returnedChainID) : reject(),
+      ),
+    );
+      
+    // Send deposit on chain
+    const tx = await etherswallet.sendTransaction(deposit);
+    await Promise.all([tx.wait(), awaiterScan()]);
+    
+    const randomPubKey = babyjubjub.privateKeyToPubKey(
+      babyjubjub.seedToPrivateKey(bytes.random(32)),
+    );
+
+    // Create transaction
+    const transaction = new ERC20Transaction(TOKEN_ADDRESS, chainID);
+    transaction.outputs = [new ERC20Note(randomPubKey, RANDOM, new BN('300', 10), TOKEN_ADDRESS)];
+    const dummyTx = await transaction.dummyProve(lepton.wallets[walletID], testEncryptionKey);
+    const call = await contract.transact([
+      dummyTx
+    ]);
+    
     const random = babyjubjub.random();
 
     let overrides : CallOverrides = {
       from : '0x0000000000000000000000000000000000000000'
     };
-
-    expect(await (await contract.relay([dummyTx], random, true,[call], overrides)).gasLimit).to.greaterThanOrEqual(0);
+    
+    expect((await contract.relay([dummyTx], random, true,[call], overrides)).gasLimit).to.greaterThanOrEqual(0);
   });
 
   it('[HH] Should return deposit weth amount', async function run() {

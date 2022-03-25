@@ -371,7 +371,8 @@ class ERC20RailgunContract {
     // Return populated transaction
     return this.contract.populateTransaction.transact(inputs);
   }
-
+ 
+  
   /**
    *
    * @param
@@ -384,15 +385,11 @@ class ERC20RailgunContract {
     calls: PopulatedTransaction[],
     overrides: CallOverrides = {},
   ): Promise<PopulatedTransaction> {
-    return this.contract.populateTransaction.relay(
-      transactions,
-      random,
-      requireSuccess,
+    return this.contract.populateTransaction.relay(transactions,random,requireSuccess,
       calls.map((call) => {
         if (!call.to) {
           throw new Error('Must specify to address');
         }
-
         return {
           to: call.to,
           data: call.data || '',
@@ -453,6 +450,7 @@ class ERC20RailgunContract {
       { value: amount },
     );
   }
+  *
 
   /**
    * Remove all listeners and shutdown contract instance
