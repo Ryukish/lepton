@@ -9,7 +9,7 @@ import {BigNumber, CallOverrides, ethers } from 'ethers';
 import artifacts from 'railgun-artifacts';
 
 import memdown from 'memdown';
-import { Relay } from '../../src/contract';
+import { Relay } from '../../src/contract/erc20/relay';
 import { ERC20Note } from '../../src/note';
 import { ERC20Transaction } from '../../src/transaction/erc20';
 import { Artifacts, Circuits } from '../../src/prover';
@@ -19,9 +19,7 @@ import { abi as erc20abi } from '../erc20abi.test';
 import { config } from '../config.test';
 import { ScannedEventData } from '../../src/wallet';
 import { babyjubjub, bytes } from '../../src/utils';
-import { CommitmentEvent, EventName } from '../../src/contract/erc20';
-import { hexlify } from '../../src/utils/bytes';
-import { Nullifier } from '../../src/merkletree';
+import { ERC20RailgunContract } from '../../src/contract/erc20';
 
 chai.use(chaiAsPromised);
 const { expect } = chai;
@@ -32,7 +30,8 @@ let lepton: Lepton;
 let etherswallet: ethers.Wallet;
 let snapshot: number;
 let token: ethers.Contract;
-let contract: Relay;
+let contract: ERC20RailgunContract;
+let contractRelay: Relay;
 let walletID: string;
 
 const testMnemonic = config.mnemonic;
@@ -57,7 +56,8 @@ describe('Contract/Index', function () {
   
       provider = new ethers.providers.JsonRpcProvider(config.rpc);
       chainID = (await provider.getNetwork()).chainId;
-      contract = new Relay(config.contracts.proxy, provider);
+      contract = new ERC20RailgunContract(config.contracts.proxy, provider);
+      contractRelay = new Relay(config.contracts.relay, provider);
   
       const { privateKey } = ethers.utils.HDNode.fromMnemonic(config.mnemonic).derivePath(
         ethers.utils.defaultPath,
@@ -89,6 +89,7 @@ describe('Contract/Index', function () {
         const deposit = await contract.generateDeposit([
           new ERC20Note(pubkey, RANDOM, new BN('11000000000000000000000000', 10), TOKEN_ADDRESS),
         ]);
+        
     
         const awaiterScan = () =>
         new Promise((resolve, reject) =>
@@ -104,10 +105,10 @@ describe('Contract/Index', function () {
         const randomPubKey = babyjubjub.privateKeyToPubKey(
           babyjubjub.seedToPrivateKey(bytes.random(32)),
         );
-    
+
         // Create transaction
         const transaction = new ERC20Transaction(TOKEN_ADDRESS, chainID);
-        transaction.outputs = [new ERC20Note(randomPubKey, RANDOM, new BN('300', 10), TOKEN_ADDRESS)];
+        transaction.outputs = [new ERC20Note(randomPubKey, RANDOM, new BN('11000000000000000000000000', 10), TOKEN_ADDRESS)];
         const dummyTx = await transaction.dummyProve(lepton.wallets[walletID], testEncryptionKey);
         const call = await contract.transact([
           dummyTx
@@ -119,7 +120,7 @@ describe('Contract/Index', function () {
           from : '0x0000000000000000000000000000000000000000'
         };
         
-        expect((await contract.relay([dummyTx], random, true,[call], overrides)).gasLimit).to.greaterThanOrEqual(0);
+        expect((await contractRelay.relay([dummyTx], random, true,[call], overrides)).gasLimit).to.greaterThanOrEqual(0);
       });
     
       it('[HH] Should return deposit Base Token amount', async function run() {
@@ -138,7 +139,7 @@ describe('Contract/Index', function () {
           babyjubjub.seedToPrivateKey(bytes.random(32)),
         );
     
-        expect(await (await contract.depositBaseToken(amount, wethAddress, [randomPubKey1, randomPubKey2])).value).to.greaterThanOrEqual(1);
+        expect(await (await contractRelay.depositBaseToken(amount, wethAddress, [randomPubKey1, randomPubKey2])).value).to.greaterThanOrEqual(1);
     
       });
 });

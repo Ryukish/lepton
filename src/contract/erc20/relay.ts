@@ -2,15 +2,11 @@ import {
     Contract,
     PopulatedTransaction,
     BigNumber,
-    Event,
-    EventFilter,
     CallOverrides,
 } from 'ethers';
 import type { Provider } from '@ethersproject/abstract-provider';
-import { bytes, babyjubjub } from '../../utils';
-import { abi } from './abi';
-import { ERC20Note } from '../../note';
-import type { Commitment, Nullifier } from '../../merkletree';
+import { babyjubjub } from '../../utils';
+import { abiRelay } from './abi';
 import { LeptonDebugger } from '../../models/types';
 import {BytesData} from '../../utils/bytes';
 import { ERC20TransactionSerialized } from '../../transaction/erc20';
@@ -18,8 +14,6 @@ import { ERC20TransactionSerialized } from '../../transaction/erc20';
 class Relay {
 
     contract: Contract;
-  
-
 
       // Contract address
   address: string;
@@ -33,7 +27,7 @@ class Relay {
    */
   constructor(address: string, provider: Provider, leptonDebugger?: LeptonDebugger) {
     this.address = address;
-    this.contract = new Contract(address, abi, provider);
+    this.contract = new Contract(address, abiRelay, provider);
     this.leptonDebugger = leptonDebugger;
   }
 
