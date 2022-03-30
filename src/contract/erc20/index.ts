@@ -4,7 +4,6 @@ import {
   BigNumber,
   Event,
   EventFilter,
-  CallOverrides,
 } from 'ethers';
 import type { Provider } from '@ethersproject/abstract-provider';
 import { bytes, babyjubjub } from '../../utils';

@@ -36,7 +36,7 @@ class Relay {
    * @param
    * @returns
    */
-   relay(
+  relay(
     transactions: ERC20TransactionSerialized[],
     random: BytesData,
     requireSuccess: boolean,
@@ -50,7 +50,7 @@ class Relay {
         }
         return {
           to: call.to,
-          data: call.data || '',
+          data: call.data || '0',
           value: call.value || '0',
         };
       }),

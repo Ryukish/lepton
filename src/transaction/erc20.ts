@@ -50,8 +50,8 @@ const NOTE_OUTPUTS = 3;
 
 class ERC20Transaction {
   adaptID: AdaptID = {
-    contract: '00',
-    parameters: '00',
+    contract: bytes.hexlify(bytes.padToLength("00", 20),true),
+    parameters: bytes.hexlify(bytes.padToLength("00", 20),true),
   };
 
   chainID: number;
@@ -358,7 +358,7 @@ class ERC20Transaction {
       withdrawAmount: this.withdraw,
       tokenField: this.token,
       outputTokenField: this.deposit.gtn(0) || this.withdraw.gtn(0) ? this.token : '00',
-      outputEthAddress: this.withdrawAddress || '00',
+      outputEthAddress:bytes.hexlify(bytes.padToLength(this.withdrawAddress || "00", 20),true),
       randomIn: solutions[tree].map((utxo) => utxo.note.random),
       valuesIn: solutions[tree].map((utxo) => utxo.note.amount),
       spendingKeys,
@@ -430,7 +430,7 @@ class ERC20Transaction {
       ],
       c: [new BN(0), new BN(0)],
     };
-
+    
     return this.generateSerializedTransaction(dummyProof, inputs, commitments);
   }
 

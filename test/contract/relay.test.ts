@@ -87,10 +87,9 @@ describe('Contract/Index', function () {
     
         // Create deposit
         const deposit = await contract.generateDeposit([
-          new ERC20Note(pubkey, RANDOM, new BN('11000000000000000000000000', 10), TOKEN_ADDRESS),
+          new ERC20Note(pubkey, RANDOM, new BN('11000000000000', 10), TOKEN_ADDRESS),
         ]);
-        
-    
+      
         const awaiterScan = () =>
         new Promise((resolve, reject) =>
           lepton.wallets[walletID].once('scanned', ({ chainID: returnedChainID }: ScannedEventData) =>
@@ -108,7 +107,7 @@ describe('Contract/Index', function () {
 
         // Create transaction
         const transaction = new ERC20Transaction(TOKEN_ADDRESS, chainID);
-        transaction.outputs = [new ERC20Note(randomPubKey, RANDOM, new BN('11000000000000000000000000', 10), TOKEN_ADDRESS)];
+        transaction.outputs = [new ERC20Note(randomPubKey, RANDOM, new BN('300', 10), TOKEN_ADDRESS)];
         const dummyTx = await transaction.dummyProve(lepton.wallets[walletID], testEncryptionKey);
         const call = await contract.transact([
           dummyTx
@@ -119,8 +118,8 @@ describe('Contract/Index', function () {
         let overrides : CallOverrides = {
           from : '0x0000000000000000000000000000000000000000'
         };
-        
         expect((await contractRelay.relay([dummyTx], random, true,[call], overrides)).gasLimit).to.greaterThanOrEqual(0);
+        
       });
     
       it('[HH] Should return deposit Base Token amount', async function run() {
