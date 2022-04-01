@@ -58,6 +58,29 @@ class Relay {
     );
   }
 
+  estimateGas(transactions: ERC20TransactionSerialized[],
+    random: BytesData,
+    requireSucccess: Boolean,
+    calls:PopulatedTransaction[],
+    overrides: CallOverrides = {},
+    ): Promise<BigNumber> {
+      const overridesFormatted = overrides || {}
+      overridesFormatted.from = "0x0000000000000000000000000000000000000000";
+
+      console.log(JSON.stringify(transactions));
+      return this.contract.estimateGas.relay(transactions,random,requireSucccess,calls.map((call) => {
+        if (!call.to) {
+          throw new Error('Must specify to address');
+        }
+  
+        return {
+          to: call.to,
+          data: call.data || '',
+          value: call.value || '0'
+        }
+      }), overridesFormatted);
+  }
+
   depositBaseToken(
     amount: BigNumber,
     wethAddress: String,

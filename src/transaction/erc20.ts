@@ -51,7 +51,7 @@ const NOTE_OUTPUTS = 3;
 class ERC20Transaction {
   adaptID: AdaptID = {
     contract: bytes.hexlify(bytes.padToLength("00", 20),true),
-    parameters: bytes.hexlify(bytes.padToLength("00", 20),true),
+    parameters: "0",
   };
 
   chainID: number;
