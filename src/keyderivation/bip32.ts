@@ -1,4 +1,3 @@
-import { Signature } from 'circomlib';
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils';
 import { hash, keysUtils } from '../utils';
 import { fromUTF8String, hexToBigInt } from '../utils/bytes';
@@ -6,6 +5,8 @@ import { mnemonicToSeed } from './bip39';
 import { KeyNode } from '../models/types';
 import { childKeyDerivationHardened, getPathSegments } from '../utils/bip32';
 import { BytesData } from '../models/transaction-types';
+import { Signature } from '../models/circomlibjs-types';
+import { getCircomlibJS } from '../utils/circomlibjs-loader';
 
 const CURVE_SEED = fromUTF8String('babyjubjub seed');
 const HARDENED_OFFSET = 0x80000000;
@@ -91,7 +92,7 @@ export class Node {
   }
 
   static getMasterPublicKey(spendingPublicKey: [bigint, bigint], nullifyingKey: bigint): bigint {
-    return keysUtils.poseidon([...spendingPublicKey, nullifyingKey]);
+    return getCircomlibJS().poseidon([...spendingPublicKey, nullifyingKey]);
   }
 
   async getViewingKeyPair(): Promise<ViewingKeyPair> {
@@ -103,7 +104,7 @@ export class Node {
 
   async getNullifyingKey(): Promise<bigint> {
     const { privateKey } = await this.getViewingKeyPair();
-    return keysUtils.poseidon([hexToBigInt(bytesToHex(privateKey))]);
+    return getCircomlibJS().poseidon([hexToBigInt(bytesToHex(privateKey))]);
   }
 
   signBySpendingKey(message: bigint): Signature {

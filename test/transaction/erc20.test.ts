@@ -4,8 +4,7 @@ import chai, { assert } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import memdown from 'memdown';
 import { Wallet as EthersWallet } from '@ethersproject/wallet';
-// @ts-ignore
-import { Signature } from 'circomlib';
+import { hexToBytes } from 'ethereum-cryptography/utils';
 import { Database } from '../../src/database';
 import { MerkleTree } from '../../src/merkletree';
 import { Wallet } from '../../src/wallet';
@@ -18,7 +17,9 @@ import { artifactsGetter, DECIMALS_18 } from '../helper';
 import { hashBoundParams } from '../../src/transaction/transaction';
 import { formatToByteLength } from '../../src/utils/bytes';
 import { AddressData } from '../../src/keyderivation/bech32-encode';
-import { getEphemeralKeys, getSharedSymmetricKey, poseidon } from '../../src/utils/keys-utils';
+import { getEphemeralKeys, getSharedSymmetricKey } from '../../src/utils/keys-utils';
+import { Signature } from '../../src/models/circomlibjs-types';
+import { getCircomlibJS } from '../../src/utils/circomlibjs-loader';
 import { TokenType } from '../../src/models/transaction-types';
 
 chai.use(chaiAsPromised);
@@ -159,7 +160,7 @@ describe('Transaction/ERC20', function () {
     const { inputs, publicInputs } = await transaction.generateInputs(wallet, testEncryptionKey);
     const { signature } = inputs;
     const { privateKey, pubkey } = await wallet.getSpendingKeyPair(testEncryptionKey);
-    const msg = poseidon(Object.values(publicInputs).flatMap((x) => x));
+    const msg = getCircomlibJS().poseidon(Object.values(publicInputs).flatMap((x) => x));
     const sig: Signature = { R8: [signature[0], signature[1]], S: signature[2] };
 
     assert.isTrue(keysUtils.verifyEDDSA(msg, sig, pubkey));

@@ -1,10 +1,11 @@
 import * as curve25519 from '@noble/ed25519';
-import { bytesToHex, randomBytes } from '@noble/hashes/utils';
-import { eddsa, poseidon, Signature } from 'circomlib';
+import { randomBytes } from '@noble/hashes/utils';
 import { hexlify } from './bytes';
+import { Signature } from '../models/circomlibjs-types';
+import { getCircomlibJS } from './circomlibjs-loader';
 
 function getPublicSpendingKey(privateKey: Uint8Array): [bigint, bigint] {
-  return eddsa.prv2pub(Buffer.from(privateKey));
+  return getCircomlibJS().eddsa.prv2pub(Buffer.from(privateKey));
 }
 
 async function getPublicViewingKey(privateViewingKey: Uint8Array): Promise<Uint8Array> {
@@ -12,15 +13,15 @@ async function getPublicViewingKey(privateViewingKey: Uint8Array): Promise<Uint8
 }
 
 function getRandomScalar(): bigint {
-  return poseidon([BigInt(hexlify(randomBytes(32), true))]);
+  return getCircomlibJS().poseidon([BigInt(hexlify(randomBytes(32), true))]);
 }
 
 function signEDDSA(privateKey: Uint8Array, message: bigint): Signature {
-  return eddsa.signPoseidon(Buffer.from(privateKey), message);
+  return getCircomlibJS().eddsa.signPoseidon(Buffer.from(privateKey), message);
 }
 
 function verifyEDDSA(message: bigint, signature: Signature, pubkey: [bigint, bigint]) {
-  return eddsa.verifyPoseidon(message, signature, pubkey);
+  return getCircomlibJS().eddsa.verifyPoseidon(message, signature, pubkey);
 }
 
 async function signED25519(message: Uint8Array, privateKey: Uint8Array): Promise<Uint8Array> {
@@ -66,5 +67,4 @@ export {
   verifyED25519,
   getEphemeralKeys,
   getSharedSymmetricKey,
-  poseidon,
 };

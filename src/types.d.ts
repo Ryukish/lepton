@@ -1,5 +1,5 @@
-declare module 'circomlib' {
-  export type Signature = {
+declare module 'circomlibjs' {
+  type Signature = {
     R8: [bigint, bigint];
     S: bigint;
   };

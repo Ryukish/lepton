@@ -1,12 +1,11 @@
-import { Signature } from 'circomlib';
-import { BigIntish, Ciphertext, NoteSerialized, TokenType } from '../models/transaction-types';
+import { BigIntish, Ciphertext, NoteSerialized } from '../models/transaction-types';
 import { encryption, keysUtils } from '../utils';
 import { ByteLength, formatToByteLength, hexlify, hexToBigInt, nToHex } from '../utils/bytes';
 import { AddressData } from '../keyderivation/bech32-encode';
 import { PublicInputs } from '../prover/types';
 import { ciphertextToEncryptedRandomData, encryptedDataToCiphertext } from '../utils/ciphertext';
-
-const { poseidon } = keysUtils;
+import { Signature } from '../models/circomlibjs-types';
+import { getCircomlibJS } from '../utils/circomlibjs-loader';
 
 export class Note {
   // viewing public key (VPK) of recipient - ed25519 curve
@@ -51,16 +50,16 @@ export class Note {
     return nToHex(this.value, ByteLength.UINT_128);
   }
 
-  private getNotePublicKey(): bigint {
-    return poseidon([this.masterPublicKey, hexToBigInt(this.random)]);
+  get notePublicKey(): bigint {
+    return getCircomlibJS().poseidon([this.masterPublicKey, hexToBigInt(this.random)]);
   }
 
   /**
    * Get note hash
    * @returns {bigint} hash
    */
-  private getHash(): bigint {
-    return poseidon([this.notePublicKey, hexToBigInt(this.token), this.value]);
+  get hash(): bigint {
+    return getCircomlibJS().poseidon([this.notePublicKey, hexToBigInt(this.token), this.value]);
   }
 
   /**
@@ -71,7 +70,7 @@ export class Note {
    */
   static sign(publicInputs: PublicInputs, spendingKeyPrivate: Uint8Array): Signature {
     const entries = Object.values(publicInputs).flatMap((x) => x);
-    const msg = poseidon(entries);
+    const msg = getCircomlibJS().poseidon(entries);
     return keysUtils.signEDDSA(spendingKeyPrivate, msg);
   }
 
@@ -168,7 +167,7 @@ export class Note {
    * @returns nullifier (hex string)
    */
   static getNullifier(nullifyingKey: bigint, leafIndex: number): bigint {
-    return poseidon([nullifyingKey, BigInt(leafIndex)]);
+    return getCircomlibJS().poseidon([nullifyingKey, BigInt(leafIndex)]);
   }
 
   static assertValidRandom(random: string) {

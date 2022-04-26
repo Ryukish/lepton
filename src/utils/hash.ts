@@ -1,9 +1,8 @@
 import crypto from 'crypto';
 import { utils as ethersutils } from 'ethers';
-// @ts-ignore
-import { poseidon as poseidonHash } from 'circomlib';
 import { arrayify, ByteLength, formatToByteLength, hexlify, numberify } from './bytes';
 import { BytesData } from '../models/transaction-types';
+import { getCircomlibJS } from './circomlibjs-loader';
 
 const hashes = [
   'RSA-MD4',
@@ -140,7 +139,7 @@ function poseidon(preImage: BytesData[]): string {
   const preImageFormatted = preImage.map((bytedata) => BigInt(numberify(bytedata).toString(10)));
 
   // Hash
-  const hash = poseidonHash(preImageFormatted).toString(16);
+  const hash = getCircomlibJS().poseidon(preimageFormatted).toString(16);
 
   // Pad to even length if needed
   return formatToByteLength(hash, ByteLength.UINT_256, false);

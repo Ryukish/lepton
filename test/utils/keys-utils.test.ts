@@ -14,6 +14,7 @@ import {
   verifyED25519,
   verifyEDDSA,
 } from '../../src/utils/keys-utils';
+import { getCircomlibJS } from '../../src/utils/circomlibjs-loader';
 
 chai.use(chaiAsPromised);
 const { expect } = chai;
@@ -38,12 +39,12 @@ describe('Test keys-utils', () => {
   });
 
   it('Should create and verify EDDSA signatures', () => {
-    const message = poseidon([1n, 2n]);
+    const message = getCircomlibJS().poseidon([1n, 2n]);
 
     const signature = signEDDSA(privateSpendingKey, message);
     assert.isTrue(verifyEDDSA(message, signature, publicSpendingKey));
 
-    const fakeMessage = poseidon([2n, 3n]);
+    const fakeMessage = getCircomlibJS().poseidon([2n, 3n]);
     assert.isFalse(verifyEDDSA(fakeMessage, signature, publicSpendingKey));
     assert.isFalse(verifyEDDSA(message, signature, [0n, 1n]));
   });
