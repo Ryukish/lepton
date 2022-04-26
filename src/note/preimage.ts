@@ -1,7 +1,7 @@
 import { EncryptedRandom } from '../models/transaction-types';
 import { ByteLength, formatToByteLength, hexToBigInt, nToHex } from '../utils/bytes';
+import { getCircomlibJS } from '../utils/circomlibjs-loader';
 import { ZERO_ADDRESS } from '../utils/constants';
-import { poseidon } from '../utils/keys-utils';
 
 export const emptyCommitmentPreimage = {
   npk: '00',
@@ -51,7 +51,7 @@ export class WithdrawNote {
    */
   get hash(): string {
     return nToHex(
-      poseidon([
+      getCircomlibJS().poseidon([
         hexToBigInt(this.withdrawAddress),
         hexToBigInt(this.token.tokenAddress),
         this.value,

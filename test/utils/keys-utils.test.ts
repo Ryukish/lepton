@@ -5,6 +5,7 @@ import chaiAsPromised from 'chai-as-promised';
 import { before } from 'mocha';
 import { keysUtils } from '../../src/utils';
 import { ByteLength, nToHex } from '../../src/utils/bytes';
+import { getCircomlibJS } from '../../src/utils/circomlibjs-loader';
 
 chai.use(chaiAsPromised);
 const { expect } = chai;
@@ -25,10 +26,10 @@ describe('Test keys-utils', () => {
   });
 
   it('Should create and verify signatures', () => {
-    const message = keysUtils.poseidon([1n, 2n]);
+    const message = getCircomlibJS().poseidon([1n, 2n]);
     const signature = keysUtils.signEDDSA(privateKey, message);
     assert.isTrue(keysUtils.verifyEDDSA(message, signature, pubkey));
-    const fakeMessage = keysUtils.poseidon([2n, 3n]);
+    const fakeMessage = getCircomlibJS().poseidon([2n, 3n]);
     assert.isFalse(keysUtils.verifyEDDSA(fakeMessage, signature, pubkey));
     assert.isFalse(keysUtils.verifyEDDSA(message, signature, [0n, 1n]));
   });

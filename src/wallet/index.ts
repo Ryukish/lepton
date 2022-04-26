@@ -25,8 +25,7 @@ import {
 } from '../utils/bytes';
 import { SpendingKeyPair, ViewingKeyPair } from '../keyderivation/bip32';
 import LeptonDebug from '../debugger';
-
-const { poseidon } = keysUtils;
+import { getCircomlibJS } from '../utils/circomlibjs-loader';
 
 export type WalletDetails = {
   treeScannedHeights: number[];
@@ -196,7 +195,7 @@ class Wallet extends EventEmitter {
    * @todo protect like spending private key
    */
   getNullifyingKey(): bigint {
-    return poseidon([hexToBigInt(hexlify(this.#viewingKeyPair.privateKey, true))]);
+    return getCircomlibJS().poseidon([hexToBigInt(hexlify(this.#viewingKeyPair.privateKey, true))]);
   }
 
   /**

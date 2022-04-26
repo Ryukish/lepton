@@ -1,9 +1,8 @@
-// import { poseidon } from 'circomlibjs';
 import { CommitmentPreimage, EncryptedRandom } from '../models/transaction-types';
 import { encryption } from '../utils';
 import { ByteLength, formatEncryptedRandom, hexToBigInt, nToHex } from '../utils/bytes';
+import { getCircomlibJS } from '../utils/circomlibjs-loader';
 import { ZERO_ADDRESS } from '../utils/constants';
-import { poseidon } from '../utils/keys-utils';
 
 export class Deposit {
   constructor(
@@ -22,14 +21,14 @@ export class Deposit {
   }
 
   get notePublicKey(): bigint {
-    return poseidon([this.masterPublicKey, hexToBigInt(this.random)]);
+    return getCircomlibJS().poseidon([this.masterPublicKey, hexToBigInt(this.random)]);
   }
 
   /**
    * Get note hash
    */
   get hash(): bigint {
-    return poseidon([this.notePublicKey, hexToBigInt(this.token), this.value]);
+    return getCircomlibJS().poseidon([this.notePublicKey, hexToBigInt(this.token), this.value]);
   }
 
   /**

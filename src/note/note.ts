@@ -1,4 +1,3 @@
-import { Signature } from 'circomlibjs';
 import { BigIntish, Ciphertext, NoteSerialized } from '../models/transaction-types';
 import { encryption, keysUtils } from '../utils';
 import {
@@ -11,8 +10,8 @@ import {
 } from '../utils/bytes';
 import { AddressData } from '../keyderivation/bech32-encode';
 import { PublicInputs } from '../prover';
-
-const { poseidon } = keysUtils;
+import { Signature } from '../models/circomlibjs-types';
+import { getCircomlibJS } from '../utils/circomlibjs-loader';
 
 export class Note {
   // viewing public key (VPK) of recipient - ed25519 curve
@@ -50,7 +49,7 @@ export class Note {
   }
 
   get notePublicKey(): bigint {
-    return poseidon([this.masterPublicKey, hexToBigInt(this.random)]);
+    return getCircomlibJS().poseidon([this.masterPublicKey, hexToBigInt(this.random)]);
   }
 
   /**
@@ -58,7 +57,7 @@ export class Note {
    * @returns {bigint} hash
    */
   get hash(): bigint {
-    return poseidon([this.notePublicKey, hexToBigInt(this.token), this.value]);
+    return getCircomlibJS().poseidon([this.notePublicKey, hexToBigInt(this.token), this.value]);
   }
 
   /**
@@ -72,7 +71,7 @@ export class Note {
    */
   static sign(publicInputs: PublicInputs, spendingKeyPrivate: Uint8Array): Signature {
     const entries = Object.values(publicInputs).flatMap((x) => x);
-    const msg = poseidon(entries);
+    const msg = getCircomlibJS().poseidon(entries);
     return keysUtils.signEDDSA(spendingKeyPrivate, msg);
   }
 
@@ -175,6 +174,6 @@ export class Note {
    * @returns nullifier (hex string)
    */
   static getNullifier(nullifyingKey: bigint, leafIndex: number): bigint {
-    return poseidon([nullifyingKey, BigInt(leafIndex)]);
+    return getCircomlibJS().poseidon([nullifyingKey, BigInt(leafIndex)]);
   }
 }
