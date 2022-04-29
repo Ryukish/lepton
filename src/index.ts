@@ -211,7 +211,6 @@ class Lepton {
     };
     const nullifierListener = async (nullifiers: Nullifier[]) => {
       await this.nullifierListener(chainID, nullifiers);
-      LeptonDebug.log('nullifierlistener done');
     };
     // Setup listeners
     this.contracts[chainID].treeUpdates(eventsListener, nullifierListener);
