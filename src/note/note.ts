@@ -25,6 +25,8 @@ export class Note {
 
   readonly notePublicKey: bigint;
 
+  readonly memo: bigint[] | undefined;
+
   readonly hash: bigint;
 
   /**
@@ -34,7 +36,13 @@ export class Note {
    * @param {string} token - note token ID
    * @param {BigInt} value - note value
    */
-  constructor(addressData: AddressData, random: string, value: BigIntish, token: string) {
+  constructor(
+    addressData: AddressData,
+    random: string,
+    value: BigIntish,
+    token: string,
+    memo?: string,
+  ) {
     Note.assertValidRandom(random);
 
     this.masterPublicKey = addressData.masterPublicKey;
@@ -43,6 +51,9 @@ export class Note {
     this.token = formatToByteLength(token, ByteLength.UINT_256, false);
     this.value = BigInt(value);
     this.notePublicKey = this.getNotePublicKey();
+    if (memo) {
+      this.memo = Note.encryptMemo(memo);
+    }
     this.hash = this.getHash();
   }
 
@@ -72,6 +83,11 @@ export class Note {
     const entries = Object.values(publicInputs).flatMap((x) => x);
     const msg = poseidon(entries);
     return keysUtils.signEDDSA(spendingKeyPrivate, msg);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private static encryptMemo(memo: string): bigint[] {
+    return [0n, 1n];
   }
 
   /**
