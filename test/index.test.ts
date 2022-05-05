@@ -10,7 +10,7 @@ import { Wallet } from '../src/wallet';
 import { artifactsGetter, awaitScan, DECIMALS_18, getEthersWallet, mockQuickSync } from './helper';
 import { ERC20Deposit } from '../src/note/erc20-deposit';
 import { MerkleTree } from '../src/merkletree';
-import { formatToByteLength, hexToBigInt } from '../src/utils/bytes';
+import { ByteLength, formatToByteLength, hexToBigInt } from '../src/utils/bytes';
 import { ERC20RailgunContract } from '../src/contract';
 import { ZERO_ADDRESS } from '../src/utils/constants';
 import { bytes } from '../src/utils';
@@ -69,7 +69,7 @@ describe('Lepton', function () {
 
     snapshot = await provider.send('evm_snapshot', []);
     token = new ethers.Contract(config.contracts.rail, erc20abi, etherswallet);
-    tokenAddress = formatToByteLength(token.address, 32, false);
+    tokenAddress = formatToByteLength(token.address, ByteLength.UINT_256);
 
     const balance = await token.balanceOf(etherswallet.address);
     await token.approve(config.contracts.proxy, balance);

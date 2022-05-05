@@ -4,7 +4,13 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { TokenType } from '../../src/models/transaction-types';
 import { ERC20Deposit } from '../../src/note';
-import { formatToByteLength, hexlify, hexToBigInt, random } from '../../src/utils/bytes';
+import {
+  ByteLength,
+  formatToByteLength,
+  hexlify,
+  hexToBigInt,
+  random,
+} from '../../src/utils/bytes';
 import { ZERO_ADDRESS } from '../../src/utils/constants';
 import { getRandomScalar } from '../../src/utils/keys-utils';
 import { poseidon } from '../../src/utils/hash';
@@ -13,7 +19,7 @@ import { config } from '../config.test';
 chai.use(chaiAsPromised);
 const { expect } = chai;
 
-const TOKEN: string = formatToByteLength(config.contracts.rail, 20, true);
+const TOKEN: string = formatToByteLength(config.contracts.rail, ByteLength.Address, true);
 
 let mpk: bigint;
 let vpk: Uint8Array;

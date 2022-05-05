@@ -73,7 +73,7 @@ class Transaction {
    * @param tree - manually specify a tree
    */
   constructor(token: string, tokenType: TokenType, chainID: number) {
-    this.token = formatToByteLength(token, ByteLength.UINT_256, false);
+    this.token = formatToByteLength(token, ByteLength.UINT_256);
     this.tokenType = tokenType;
     this.chainID = chainID;
     this.withdrawNote = ERC20WithdrawNote.empty();
@@ -132,7 +132,7 @@ class Transaction {
 
     // Get UTXOs sorted by tree
     const treeSortedBalances = (await wallet.balancesByTree(this.chainID))[
-      formatToByteLength(this.token, 32, false)
+      formatToByteLength(this.token, 32)
     ];
 
     if (treeSortedBalances === undefined) {

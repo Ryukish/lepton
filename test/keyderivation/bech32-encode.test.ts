@@ -38,7 +38,7 @@ describe('Key Derivation/Bech32 Encode', () => {
     vectors.forEach((vector, index) => {
       const v = {
         masterPublicKey: hexToBigInt(vector.pubkey),
-        viewingPublicKey: hexToBytes(formatToByteLength(vector.pubkey, ByteLength.UINT_256, false)),
+        viewingPublicKey: hexToBytes(formatToByteLength(vector.pubkey, ByteLength.UINT_256)),
         chainID: vector.chainID,
         version: vector.version,
       };

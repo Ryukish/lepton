@@ -399,7 +399,7 @@ class Wallet extends EventEmitter {
 
     // Loop through each TXO and add to balances if unspent
     TXOs.forEach((txOutput) => {
-      const token = formatToByteLength(txOutput.note.token, 32, false);
+      const token = formatToByteLength(txOutput.note.token, ByteLength.UINT_256, true);
       // If we don't have an entry for this token yet, create one
       if (!balances[token]) {
         balances[token] = {
@@ -423,7 +423,7 @@ class Wallet extends EventEmitter {
 
   async getBalance(chainID: number, tokenAddress: string): Promise<bigint | undefined> {
     const balances = await this.balances(chainID);
-    const balanceForToken = balances[formatToByteLength(tokenAddress, 32, false)];
+    const balanceForToken = balances[formatToByteLength(tokenAddress, ByteLength.UINT_256)];
     return balanceForToken ? balanceForToken.balance : undefined;
   }
 

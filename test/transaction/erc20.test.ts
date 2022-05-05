@@ -14,7 +14,7 @@ import { Prover } from '../../src/prover';
 import { Transaction } from '../../src/transaction';
 import { hashBoundParams } from '../../src/transaction/transaction';
 import { bytes } from '../../src/utils';
-import { formatToByteLength } from '../../src/utils/bytes';
+import { ByteLength, formatToByteLength } from '../../src/utils/bytes';
 import { poseidon } from '../../src/utils/hash';
 import {
   getEphemeralKeys,
@@ -123,8 +123,8 @@ describe('Transaction/ERC20', function () {
     const params = {
       treeNumber: BigInt(0),
       withdraw: BigInt(0),
-      adaptContract: formatToByteLength('00', 20, true),
-      adaptParams: formatToByteLength('00', 32, true), //
+      adaptContract: formatToByteLength('00', ByteLength.Address, true),
+      adaptParams: formatToByteLength('00', ByteLength.UINT_256, true), //
       commitmentCiphertext: [
         {
           ciphertext: [0n, BigInt(0), BigInt(0), BigInt(0)],
