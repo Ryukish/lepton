@@ -14,6 +14,9 @@ import { bytes, hash } from '../../src/utils';
 import { verifyED25519 } from '../../src/utils/keys-utils';
 import { Wallet } from '../../src/wallet';
 import { config } from '../config.test';
+import { PrivateInputs, PublicInputs } from '../../src/prover/types';
+import { BoundParams, TokenType} from '../../src/models/transaction-types';
+import { Transaction } from '../../src/transaction/transaction';
 
 chai.use(chaiAsPromised);
 const { expect } = chai;
@@ -26,48 +29,33 @@ const chainID: number = 1;
 const testMnemonic = config.mnemonic;
 const testEncryptionKey = config.encryptionKey;
 
-// const TEST_MNEMONICS = [
-// ];
+const TEST_MNEMONICS = [
+];
 
-// let testWallets: Wallet[];
-// let leaves: Commitment[];
-// let leaves2: Commitment[];
+let testWallets: Wallet[];
+let leaves: Commitment[];
+let leaves2: Commitment[];
+let inputs: PrivateInputs;
+let publicInputs: PublicInputs;
+let boundParams: BoundParams;
 
-// const setupTestWallets = async () => {
-//   testWallets = await Promise.all(
-//     TEST_MNEMONICS.map((mnemonic) => Wallet.fromMnemonic(db, mnemonic, testEncryptionKey)),
-//   );
+const setupTestWallets = async () => {
+  testWallets = await Promise.all(
+    TEST_MNEMONICS.map((mnemonic) => Wallet.fromMnemonic(db, mnemonic, testEncryptionKey)),
+  );
+  
+const notesPrep = [0, 1, 2, 3, 2, 0];
 
-// const notesPrep = [0, 1, 2, 3, 2, 0];
-// leaves = notesPrep.map((keyIndex) => {
-//   const note = new Note(
-//     Lepton.decodeAddress(testWallets[0].getAddress(1)),
-//     '1e686e7506b0f4f21d6991b4cb58d39e77c31ed0577a986750c8dce8804af5b9',
-//     'ffff',
-//     '7f4925cdf66ddf5b88016df1fe915e68eff8f192',
-//   );
-//   return {
-//     hash: nToHex(note.hash, ByteLength.UINT_256),
-//     txid: '0x1097c636f99f179de275635277e458820485039b0a37088a5d657b999f73b59b',
-//     ciphertext: note.encrypt(sharedKey),
-//   };
-// });
+leaves = notesPrep.map((keyIndex) => {
+  const transaction = new Transaction(config.contracts.rail, TokenType.ERC20, chainID);
+  const { inputs, publicInputs, boundParams} = transaction.generateInputs(wallet, testEncryptionKey);
 
-// const notesPrep2 = [0, 1, 2, 3, 2, 0];
-// leaves2 = notesPrep2.map((keyIndex) => {
-//   const note = new Note(
-//     Lepton.decodeAddress(testWallets[0].getAddress(1)),
-//     '1e686e7506b0f4f21d6991b4cb58d39e77c31ed0577a986750c8dce8804af5b9',
-//     'ffff',
-//     '7f4925cdf66ddf5b88016df1fe915e68eff8f192',
-//   );
-//   return {
-//     hash: note.hash,
-//     txid: '0x1097c636f99f179de275635277e458820485039b0a37088a5d657b999f73b59b',
-//     ciphertext: note.encrypt(sharedKey),
-//   };
-// });
-// };
+  return {s
+    hash: publicInputs.commitmentsOut,
+    txid: '0x1097c636f99f179de275635277e458820485039b0a37088a5d657b999f73b59b',
+    ciphertext: boundParams.commitmentCiphertext,
+  };
+});
 
 describe('Wallet/Index', () => {
   beforeEach(async () => {
@@ -178,81 +166,86 @@ describe('Wallet/Index', () => {
     });
   });
 
-  // it('Should scan ERC20 balances', async () => {
-  //   await merkletree.queueLeaves(0, 0, leaves);
+  //here
 
-  //   const process = wallet.scanBalances(1);
+  it.only('Should scan ERC20 balances', async () => {
 
-  //   // Should respect scan lock
-  //   wallet.scanBalances(1);
-  //   await process;
+    leaves
 
-  //   expect(await wallet.getWalletDetails(chainID)).to.deep.equal({
-  //     treeScannedHeights: [5],
-  //     primaryHeight: 5,
-  //     changeHeight: 2,
-  //   });
+    await merkletree.queueLeaves(0, 0, leaves);
 
-  //   await merkletree.queueLeaves(0, 6, leaves2);
+    const process = wallet.scanBalances(1);
 
-  //   await wallet.scanBalances(1);
+    // Should respect scan lock
+    wallet.scanBalances(1);
+    await process;
 
-  //   expect(await wallet.getWalletDetails(chainID)).to.deep.equal({
-  //     treeScannedHeights: [11],
-  //   });
+    expect(await wallet.getWalletDetails(chainID)).to.deep.equal({
+      treeScannedHeights: [5],
+      primaryHeight: 5,
+      changeHeight: 2,
+    });
 
-  //   const balances = await wallet.balances(1);
+    await merkletree.queueLeaves(0, 6, leaves2);
 
-  //   expect(
-  //     balances['0000000000000000000000007f4925cdf66ddf5b88016df1fe915e68eff8f192'].utxos.length,
-  //   ).to.equal(12);
+    await wallet.scanBalances(1);
 
-  //   expect(
-  //     balances['0000000000000000000000007f4925cdf66ddf5b88016df1fe915e68eff8f192'].balance,
-  //   ).to.equal(786420n);
+    expect(await wallet.getWalletDetails(chainID)).to.deep.equal({
+      treeScannedHeights: [11],
+    });
 
-  //   await merkletree.nullify([
-  //     {
-  //       txid: '000001',
-  //       nullifier: '15f75defeb0075ee0e898acc70780d245ab1c19b33cfd2b855dd66faee94a5e0',
-  //       treeNumber: 0,
-  //     },
-  //   ]);
+    const balances = await wallet.balances(1);
 
-  //   const balances2 = await wallet.balances(1);
+    expect(
+      balances['0000000000000000000000007f4925cdf66ddf5b88016df1fe915e68eff8f192'].utxos.length,
+    ).to.equal(12);
 
-  //   expect(
-  //     balances2['0000000000000000000000007f4925cdf66ddf5b88016df1fe915e68eff8f192'].utxos.length,
-  //   ).to.equal(11);
+    expect(
+      balances['0000000000000000000000007f4925cdf66ddf5b88016df1fe915e68eff8f192'].balance,
+    ).to.equal(786420n);
 
-  //   expect(
-  //     balances2['0000000000000000000000007f4925cdf66ddf5b88016df1fe915e68eff8f192'].balance,
-  //   ).to.equal(720885n);
+    await merkletree.nullify([
+      {
+        txid: '000001',
+        nullifier: '15f75defeb0075ee0e898acc70780d245ab1c19b33cfd2b855dd66faee94a5e0',
+        treeNumber: 0,
+      },
+    ]);
 
-  //   await merkletree.nullify([
-  //     {
-  //       txid: '000001',
-  //       nullifier: '1c3ba503ad9e144683649756ce1e9a919afb56d836988435c1528ea8942f286e',
-  //       treeNumber: 0,
-  //     },
-  //   ]);
+    const balances2 = await wallet.balances(1);
 
-  //   const balances3 = await wallet.balances(1);
+    expect(
+      balances2['0000000000000000000000007f4925cdf66ddf5b88016df1fe915e68eff8f192'].utxos.length,
+    ).to.equal(11);
 
-  //   expect(
-  //     balances3['0000000000000000000000007f4925cdf66ddf5b88016df1fe915e68eff8f192'].utxos.length,
-  //   ).to.equal(10);
+    expect(
+      balances2['0000000000000000000000007f4925cdf66ddf5b88016df1fe915e68eff8f192'].balance,
+    ).to.equal(720885n);
 
-  //   expect(
-  //     balances3['0000000000000000000000007f4925cdf66ddf5b88016df1fe915e68eff8f192'].balance,
-  //   ).to.equal(655350n);
+    await merkletree.nullify([
+      {
+        txid: '000001',
+        nullifier: '1c3ba503ad9e144683649756ce1e9a919afb56d836988435c1528ea8942f286e',
+        treeNumber: 0,
+      },
+    ]);
 
-  //   expect(
-  //     (await wallet.balancesByTree(1))[
-  //       '0000000000000000000000007f4925cdf66ddf5b88016df1fe915e68eff8f192'
-  //     ][0].utxos.length,
-  //   ).to.equal(10);
-  // }).timeout(60000);
+    const balances3 = await wallet.balances(1);
+
+    expect(
+      balances3['0000000000000000000000007f4925cdf66ddf5b88016df1fe915e68eff8f192'].utxos.length,
+    ).to.equal(10);
+
+    expect(
+      balances3['0000000000000000000000007f4925cdf66ddf5b88016df1fe915e68eff8f192'].balance,
+    ).to.equal(655350n);
+
+    expect(
+      (await wallet.balancesByTree(1))[
+        '0000000000000000000000007f4925cdf66ddf5b88016df1fe915e68eff8f192'
+      ][0].utxos.length,
+    ).to.equal(10);
+  }).timeout(60000);
 
   afterEach(() => {
     // Clean up database
