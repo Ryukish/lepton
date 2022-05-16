@@ -35,9 +35,6 @@ const TEST_MNEMONICS = [
 let testWallets: Wallet[];
 let leaves: Commitment[];
 let leaves2: Commitment[];
-let inputs: PrivateInputs;
-let publicInputs: PublicInputs;
-let boundParams: BoundParams;
 
 const setupTestWallets = async () => {
   testWallets = await Promise.all(
@@ -48,14 +45,14 @@ const notesPrep = [0, 1, 2, 3, 2, 0];
 
 leaves = notesPrep.map((keyIndex) => {
   const transaction = new Transaction(config.contracts.rail, TokenType.ERC20, chainID);
-  const { inputs, publicInputs, boundParams} = transaction.generateInputs(wallet, testEncryptionKey);
+  const { inputs, publicInputs, boundParams} = await transaction.generateInputs(wallet, testEncryptionKey);
 
-  return {s
+  return {
     hash: publicInputs.commitmentsOut,
     txid: '0x1097c636f99f179de275635277e458820485039b0a37088a5d657b999f73b59b',
     ciphertext: boundParams.commitmentCiphertext,
   };
-});
+}); // Convert to string 
 
 describe('Wallet/Index', () => {
   beforeEach(async () => {
@@ -169,8 +166,6 @@ describe('Wallet/Index', () => {
   //here
 
   it.only('Should scan ERC20 balances', async () => {
-
-    leaves
 
     await merkletree.queueLeaves(0, 0, leaves);
 
