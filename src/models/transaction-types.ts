@@ -1,7 +1,6 @@
-import BN from 'bn.js';
 import { SnarkProof } from '../prover/types';
 
-export type BytesData = ArrayLike<number> | string | BN;
+export type BytesData = ArrayLike<number> | string;
 
 export type BigIntish = string | number | bigint | boolean;
 
@@ -13,9 +12,9 @@ export type AdaptID = {
 };
 
 export interface Ciphertext {
-  iv: BytesData;
-  tag: BytesData;
-  data: BytesData[];
+  iv: string;
+  tag: string;
+  data: string[];
 }
 
 export type OutputCommitmentCiphertext = {

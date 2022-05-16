@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 import BN from 'bn.js';
 import crypto from 'crypto';
 import { hexToBytes } from 'ethereum-cryptography/utils';
@@ -269,11 +270,11 @@ function combine(data: BytesData[]): string {
  * @param side - side to trim from
  * @returns trimmed data
  */
-function trim(data: BytesData, length: number, side: 'left' | 'right' = 'left'): BytesData {
+function trim(data: BytesData, length: ByteLength, side: 'left' | 'right' = 'left'): BytesData {
   if (data instanceof BN) {
     if (side === 'left') {
       // If side is left, mask to byte length
-      return data.maskn(length * 8);
+      return formatToByteLength(data.maskn(length * 8).toString(16), length);
     }
 
     // Can't trim from right as we don't know the byte length of BN objects
@@ -314,6 +315,26 @@ function trim(data: BytesData, length: number, side: 'left' | 'right' = 'left'):
  */
 function formatToByteLength(data: BytesData, length: ByteLength, prefix = false): string {
   return trim(padToLength(hexlify(data, prefix), length), length) as string;
+}
+
+/**
+ * Format through hexlify, trim and padToLength given a number of bytes.
+ * @param data - data to format
+ * @param length - length to format to
+ * @returns formatted data
+ */
+function formatBNToByteLength(data: BN, length: ByteLength, prefix = false): string {
+  return formatToByteLength(data.toString(16), length, prefix);
+}
+
+/**
+ * Format through hexlify, trim and padToLength given a number of bytes.
+ * @param data - data to format
+ * @param length - length to format to
+ * @returns formatted data
+ */
+function formatBNWithoutByteLength(data: BN, prefix = false): string {
+  return hexlify(data.toString(16), prefix);
 }
 
 /**
@@ -371,5 +392,7 @@ export {
   combine,
   trim,
   formatToByteLength,
+  formatBNToByteLength,
+  formatBNWithoutByteLength,
   hexToBytes,
 };

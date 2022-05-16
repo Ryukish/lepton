@@ -14,13 +14,14 @@ import {
   arrayify,
   ByteLength,
   combine,
+  formatBNToByteLength,
+  formatBNWithoutByteLength,
   formatToByteLength,
   fromUTF8String,
   hexlify,
   hexStringToBytes,
   nToHex,
   numberify,
-  padToLength,
 } from '../utils/bytes';
 import { SpendingKeyPair, ViewingKeyPair } from '../keyderivation/bip32';
 import LeptonDebug from '../debugger';
@@ -131,11 +132,13 @@ class Wallet extends EventEmitter {
    * @returns wallet DB prefix
    */
   getWalletDBPrefix(chainID: number, tree?: number, position?: number): string[] {
-    const path = [fromUTF8String('wallet'), hexlify(this.id), hexlify(new BN(chainID))].map(
-      (element) => element.padStart(64, '0'),
-    );
-    if (tree != null) path.push(hexlify(padToLength(new BN(tree), 32)));
-    if (position != null) path.push(hexlify(padToLength(new BN(position), 32)));
+    const path = [
+      fromUTF8String('wallet'),
+      hexlify(this.id),
+      formatBNWithoutByteLength(new BN(chainID)),
+    ].map((element) => element.padStart(64, '0'));
+    if (tree != null) path.push(formatBNToByteLength(new BN(tree), ByteLength.UINT_256));
+    if (position != null) path.push(formatBNToByteLength(new BN(position), ByteLength.UINT_256));
     return path;
   }
 

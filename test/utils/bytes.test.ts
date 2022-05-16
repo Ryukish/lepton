@@ -4,7 +4,7 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 
 import { bytes } from '../../src/utils';
-import { ByteLength } from '../../src/utils/bytes';
+import { ByteLength, hexlify } from '../../src/utils/bytes';
 
 chai.use(chaiAsPromised);
 const { expect } = chai;
@@ -109,7 +109,7 @@ const stringVectors = [
   },
 ];
 
-describe('Utils/Bytes', () => {
+describe.only('Utils/Bytes', () => {
   it('Should return random values', () => {
     // Check length of random values is what we expect
     expect(bytes.random().length).to.equal(64);
@@ -135,10 +135,16 @@ describe('Utils/Bytes', () => {
       expect(bytes.hexlify(vector.array, true)).to.equal(`0x${vector.hex}`);
 
       // Test number to hex string
-      expect(bytes.hexlify(vector.number)).to.equal(vector.hex);
+      expect(bytes.hexlify(vector.number.toString(16))).to.equal(vector.hex);
 
       // Test number to hex string prefixed
-      expect(bytes.hexlify(vector.number, true)).to.equal(`0x${vector.hex}`);
+      expect(bytes.hexlify(vector.number.toString(16), true)).to.equal(`0x${vector.hex}`);
+
+      // Test number to hex string
+      expect(bytes.formatBNWithoutByteLength(vector.number)).to.equal(vector.hex);
+
+      // Test number to hex string prefixed
+      expect(bytes.formatBNWithoutByteLength(vector.number, true)).to.equal(`0x${vector.hex}`);
     });
   });
 
@@ -154,7 +160,7 @@ describe('Utils/Bytes', () => {
       expect(bytes.arrayify(vector.array)).to.deep.equal(vector.array);
 
       // Test number to byte array
-      expect(bytes.arrayify(vector.number)).to.deep.equal(vector.array);
+      expect(bytes.arrayify(vector.number.toString(16))).to.deep.equal(vector.array);
     });
   });
 
@@ -188,19 +194,23 @@ describe('Utils/Bytes', () => {
       expect(bytes.numberify(vector.array, 'le').eq(vector.numberLe)).to.equal(true);
 
       // Test number to number
-      expect(bytes.numberify(vector.number).eq(vector.number)).to.equal(true);
+      expect(bytes.numberify(vector.number.toString(16)).eq(vector.number)).to.equal(true);
     });
   });
 
   it('Should pad to length', () => {
     padVectors.forEach((vector) => {
-      expect(bytes.padToLength(vector.original, 16)).to.deep.equal(vector.left16);
+      expect(bytes.padToLength(vector.original.toString(16), 16)).to.deep.equal(vector.left16);
 
-      expect(bytes.padToLength(vector.original, 32)).to.deep.equal(vector.left32);
+      expect(bytes.padToLength(vector.original.toString(16), 32)).to.deep.equal(vector.left32);
 
-      expect(bytes.padToLength(vector.original, 16, 'right')).to.deep.equal(vector.right16);
+      expect(bytes.padToLength(vector.original.toString(16), 16, 'right')).to.deep.equal(
+        vector.right16,
+      );
 
-      expect(bytes.padToLength(vector.original, 32, 'right')).to.deep.equal(vector.right32);
+      expect(bytes.padToLength(vector.original.toString(16), 32, 'right')).to.deep.equal(
+        vector.right32,
+      );
     });
 
     expect(bytes.padToLength('0x00', 4)).to.equal('0x00000000');
@@ -328,9 +338,9 @@ describe('Utils/Bytes', () => {
 
   it('Should trim bytes', () => {
     expect(() => {
-      bytes.trim(new BN(32), 1, 'right');
+      bytes.trim(new BN(32).toString(16), 1, 'right');
     }).to.throw('Can\t trim BN from right');
-    expect(bytes.trim(new BN(861), 1).toString(10)).to.equal('93');
+    expect(bytes.trim(new BN(861).toString(16), 1)).to.equal('93');
     expect(bytes.trim('17b3c8d9', 2)).to.equal('c8d9');
     expect(bytes.trim('17b3c8d9', 2, 'right')).to.equal('17b3');
     expect(bytes.trim('0x17b3c8d9', 2)).to.equal('0xc8d9');
@@ -347,5 +357,19 @@ describe('Utils/Bytes', () => {
     expect(bytes.formatToByteLength('17b3c8d9', ByteLength.UINT_256)).to.equal(
       '0000000000000000000000000000000000000000000000000000000017b3c8d9',
     );
+  });
+
+  it('Should format data with hexlify', () => {
+    const hexlifyUint8Array = new Uint8Array([0, 0, 12]);
+    expect(hexlify(hexlifyUint8Array, true)).to.equal('0x00000c');
+    expect(hexlify(hexlifyUint8Array, false)).to.equal('00000c');
+
+    // const hexlifyBN = new BN(12);
+    // expect(hexlify(hexlifyBN, true)).to.equal('0x000012');
+    // expect(hexlify(hexlifyBN, false)).to.equal('000012');
+
+    const hexlifyString = '0x000012';
+    expect(hexlify(hexlifyString, true)).to.equal('0x000012');
+    expect(hexlify(hexlifyString, false)).to.equal('000012');
   });
 });
